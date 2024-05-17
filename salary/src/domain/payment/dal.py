@@ -1,7 +1,5 @@
-from typing import Dict, List
-
 from src.domain.abc.dal import DocumentDAO
-from src.domain.payment.dto import PaymentCreateDTO, PaymentUpdateDTO, PaymentGroupEnum
+from src.domain.payment.dto import PaymentCreateDTO, PaymentUpdateDTO, PaymentGroupEnum, SumPeriodAggregationOutputDTO
 from src.domain.payment.model import Payment
 from src.domain.payment.service import GroupStrategySelector
 from src.domain.period.dto import PeriodDTO
@@ -14,7 +12,7 @@ class PaymentDAO(DocumentDAO[Payment, PaymentCreateDTO, PaymentUpdateDTO]):
 
     async def get_sum_for_period_by_group_type(
             self, period: PeriodDTO, group_type: PaymentGroupEnum
-    ) -> Dict[str, List[int] | List[str]]:
+    ) -> SumPeriodAggregationOutputDTO:
         group_selector = GroupStrategySelector(group_type)
 
         pipeline = [
@@ -40,7 +38,7 @@ class PaymentDAO(DocumentDAO[Payment, PaymentCreateDTO, PaymentUpdateDTO]):
 
         results = await self.document.aggregate(pipeline).to_list(length=None)
 
-        dataset = [result["total"] for result in results]
-        labels = [group_selector.convert_to_iso(result[self.document.id]) for result in results]
-
-        return {"dataset": dataset, "labels": labels}
+        return SumPeriodAggregationOutputDTO(
+            dataset=[result["total"] for result in results],
+            labels=[group_selector.convert_to_iso(result[self.document.id]) for result in results]
+        )

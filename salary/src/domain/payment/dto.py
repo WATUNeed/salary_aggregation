@@ -1,5 +1,6 @@
 import datetime
 from enum import Enum
+from typing import List
 
 from beanie import PydanticObjectId
 
@@ -24,7 +25,12 @@ class PaymentGroupEnum(Enum):
     month = 'month'
 
 
-class PaymentSumForPeriodDTO(AbstractDTO):
+class SumPeriodAggregationInputDTO(AbstractDTO):
     dt_from: datetime.datetime
     dt_upto: datetime.datetime
     group_type: PaymentGroupEnum
+
+
+class SumPeriodAggregationOutputDTO(AbstractDTO):
+    dataset: List[int]
+    labels: List[str]
