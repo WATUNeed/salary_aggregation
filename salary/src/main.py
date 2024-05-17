@@ -13,7 +13,7 @@ async def main():
         from_dt=datetime.datetime.fromisoformat("2022-10-01T00:00:00"),
         to_dt=datetime.datetime.fromisoformat("2022-11-30T23:59:00")
     )
-    group_type = PaymentGroupEnum.DAY
+    group_type = PaymentGroupEnum.day
     r = await PaymentDAO().get_sum_for_period_by_group_type(period, group_type)
     print(r)
 

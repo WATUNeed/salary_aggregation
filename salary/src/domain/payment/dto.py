@@ -18,7 +18,13 @@ class PaymentUpdateDTO(AbstractDTO):
 
 
 class PaymentGroupEnum(Enum):
-    HOUR = 'hour'
-    DAY = 'day'
-    WEEK = 'week'
-    MONTH = 'month'
+    hour = 'hour'
+    day = 'day'
+    week = 'week'
+    month = 'month'
+
+
+class PaymentSumForPeriodDTO(AbstractDTO):
+    dt_from: datetime.datetime
+    dt_upto: datetime.datetime
+    group_type: PaymentGroupEnum

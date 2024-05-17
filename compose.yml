@@ -7,7 +7,7 @@ services:
     env_file:
       - .env
     command:
-      poetry run python3 -m src.main
+      aiogram run polling src.api.bot.main:dp --token ${BOT_TOKEN}
 
   mongo:
     image: mongo:7-jammy

@@ -16,24 +16,24 @@ class GroupStrategySelector:
         self.group_expression: Dict[str, Dict[str, str]] = {}
         self.sort_keys: Dict[str, int] = {}
 
-        if self._group_type == PaymentGroupEnum.HOUR:
+        if self._group_type == PaymentGroupEnum.hour:
             self._hour_expressions_strategy()
             self.convert_to_iso = self._hour_convert_to_iso_strategy
 
-        elif self._group_type == PaymentGroupEnum.DAY:
+        elif self._group_type == PaymentGroupEnum.day:
             self._day_expressions_strategy()
             self.convert_to_iso = self._day_convert_to_iso_strategy
 
-        elif self._group_type == PaymentGroupEnum.WEEK:
+        elif self._group_type == PaymentGroupEnum.week:
             self._week_expressions_strategy()
             self.convert_to_iso = self._week_convert_to_iso_strategy
 
-        elif self._group_type == PaymentGroupEnum.MONTH:
+        elif self._group_type == PaymentGroupEnum.month:
             self._month_expressions_strategy()
             self.convert_to_iso = self._month_convert_to_iso_strategy
 
         else:
-            raise ValueError("Invalid group type")
+            raise ValueError(f"Invalid group type: {self._group_type}")
 
     def _hour_expressions_strategy(self):
         self.group_expression = {
