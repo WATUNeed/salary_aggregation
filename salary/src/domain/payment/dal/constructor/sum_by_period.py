@@ -35,7 +35,7 @@ class SumByPeriodStrategyABC(metaclass=abc.ABCMeta):
 
     @staticmethod
     @abc.abstractmethod
-    def increment(dt: datetime) -> datetime.datetime:
+    def increment_in_step_over_period(dt: datetime) -> datetime.datetime:
         ...
 
 
@@ -81,7 +81,7 @@ class HourSumByPeriodStrategy(SumByPeriodStrategyABC):
         return datetime.datetime(group_id["year"], group_id["month"], group_id["day"], group_id["hour"]).isoformat()
 
     @staticmethod
-    def increment(dt: datetime) -> datetime.datetime:
+    def period_stap(dt: datetime) -> datetime.datetime:
         return dt + datetime.timedelta(hours=1)
 
 
@@ -126,7 +126,7 @@ class DaySumByPeriodStrategy(SumByPeriodStrategyABC):
         return datetime.datetime(group_id["year"], group_id["month"], group_id["day"]).isoformat()
 
     @staticmethod
-    def increment(dt: datetime) -> datetime.datetime:
+    def period_stap(dt: datetime) -> datetime.datetime:
         return dt + datetime.timedelta(days=1)
 
 
@@ -172,7 +172,7 @@ class WeekSumByPeriodStrategy(SumByPeriodStrategyABC):
         return datetime.datetime.strptime(f'{group_id["year"]} {group_id["week"]} 1', '%G %V %u').isoformat()
 
     @staticmethod
-    def increment(dt: datetime) -> datetime.datetime:
+    def period_stap(dt: datetime) -> datetime.datetime:
         return dt + datetime.timedelta(weeks=1)
 
 
@@ -218,7 +218,7 @@ class MonthSumByPeriodStrategy(SumByPeriodStrategyABC):
         return datetime.datetime(group_id["year"], group_id["month"], 1).isoformat()
 
     @staticmethod
-    def increment(dt: datetime) -> datetime.datetime:
+    def increment_in_step_over_period(dt: datetime) -> datetime.datetime:
         month = dt.month + 1
         year = dt.year
         if month > 12:
@@ -229,7 +229,8 @@ class MonthSumByPeriodStrategy(SumByPeriodStrategyABC):
 
 class SumByPeriodGroupingSelector:
     __slots__ = (
-        'period', 'group_type', '_strategy', 'period', 'match', 'group', 'sort', 'convert_to_iso', 'increment'
+        'period', 'group_type', '_strategy', 'period', 'match', 'group', 'sort', 'convert_to_iso',
+        'increment_in_step_over_period'
     )
 
     def __init__(self, period: PeriodDTO, group_type: SumPeriodGroupEnum):
@@ -257,4 +258,4 @@ class SumByPeriodGroupingSelector:
         self.sort = self._strategy.sort_fabric()
 
         self.convert_to_iso = self._strategy.convert_to_iso
-        self.increment = self._strategy.increment
+        self.increment_in_step_over_period = self._strategy.increment_in_step_over_period

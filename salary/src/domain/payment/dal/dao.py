@@ -43,6 +43,6 @@ class PaymentDAO(DocumentDAO[Payment, PaymentCreateDTO, PaymentUpdateDTO]):
             label = current.isoformat()
             labels.append(label)
             dataset.append(sums[label])
-            current = grouping_strategy.increment(current)
+            current = grouping_strategy.increment_in_step_over_period(current)
 
         return SumByPeriodOutputDTO(dataset=dataset, labels=labels)
