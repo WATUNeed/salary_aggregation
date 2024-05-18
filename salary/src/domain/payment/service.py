@@ -1,91 +1,25 @@
-import datetime
-from typing import Dict, Callable
+from aiogram.utils.formatting import Text
+from pydantic import ValidationError
 
-from src.domain.payment.dto import PaymentGroupEnum
+from src.domain.payment.dal.dao import PaymentDAO
+from src.domain.payment.dto import SumByPeriodInputDTO, SumPeriodGroupEnum
+from src.domain.period.dto import PeriodDTO
 
 
-class GroupStrategySelector:
-    __slots__ = ('_group_type', 'group_expression', 'sort_keys', 'convert_to_iso')
+async def sum_by_period(incoming_text: str) -> Text:
+    try:
+        input_data = SumByPeriodInputDTO.model_validate_json(incoming_text)
+        period = PeriodDTO.validate_from_input(
+            from_dt=input_data.dt_from,
+            to_dt=input_data.dt_upto
+        )
+    except (ValidationError, ValueError):
+        return Text(
+            'Невалидный запос. Пример запроса: ',
+            '{"dt_from": "2022-09-01T00:00:00", "dt_upto": "2022-12-31T23:59:00", "group_type": "month"}'
+        )
 
-    _group_type: PaymentGroupEnum
-    convert_to_iso: Callable[[Dict[str, int]], str]
-
-    def __init__(self, group_type: PaymentGroupEnum):
-        self._group_type = group_type
-
-        self.group_expression: Dict[str, Dict[str, str]] = {}
-        self.sort_keys: Dict[str, int] = {}
-
-        if self._group_type == PaymentGroupEnum.hour:
-            self._hour_expressions_strategy()
-            self.convert_to_iso = self._hour_convert_to_iso_strategy
-
-        elif self._group_type == PaymentGroupEnum.day:
-            self._day_expressions_strategy()
-            self.convert_to_iso = self._day_convert_to_iso_strategy
-
-        elif self._group_type == PaymentGroupEnum.week:
-            self._week_expressions_strategy()
-            self.convert_to_iso = self._week_convert_to_iso_strategy
-
-        elif self._group_type == PaymentGroupEnum.month:
-            self._month_expressions_strategy()
-            self.convert_to_iso = self._month_convert_to_iso_strategy
-
-        else:
-            raise ValueError(f"Invalid group type: {self._group_type}")
-
-    def _hour_expressions_strategy(self):
-        self.group_expression = {
-            "year": {"$year": "$dt"},
-            "month": {"$month": "$dt"},
-            "day": {"$dayOfMonth": "$dt"},
-            "hour": {"$hour": "$dt"}
-        }
-        self.sort_keys = {
-            "_id.year": 1, "_id.month": 1, "_id.day": 1, "_id.hour": 1
-        }
-
-    def _day_expressions_strategy(self):
-        self.group_expression = {
-            "year": {"$year": "$dt"},
-            "month": {"$month": "$dt"},
-            "day": {"$dayOfMonth": "$dt"}
-        }
-        self.sort_keys = {
-            "_id.year": 1, "_id.month": 1, "_id.day": 1
-        }
-
-    def _week_expressions_strategy(self):
-        self.group_expression = {
-            "year": {"$isoWeekYear": "$dt"},
-            "week": {"$isoWeek": "$dt"}
-        }
-        self.sort_keys = {
-            "_id.year": 1, "_id.week": 1
-        }
-
-    def _month_expressions_strategy(self):
-        self.group_expression = {
-            "year": {"$year": "$dt"},
-            "month": {"$month": "$dt"}
-        }
-        self.sort_keys = {
-            "_id.year": 1, "_id.month": 1
-        }
-
-    @staticmethod
-    def _hour_convert_to_iso_strategy(group_id: Dict[str, int]) -> str:
-        return datetime.datetime(group_id["year"], group_id["month"], group_id["day"], group_id["hour"]).isoformat()
-
-    @staticmethod
-    def _day_convert_to_iso_strategy(group_id: Dict[str, int]) -> str:
-        return datetime.datetime(group_id["year"], group_id["month"], group_id["day"]).isoformat()
-
-    @staticmethod
-    def _week_convert_to_iso_strategy(group_id: Dict[str, int]) -> str:
-        return datetime.datetime.strptime(f'{group_id["year"]} {group_id["week"]} 1', '%G %V %u').isoformat()
-
-    @staticmethod
-    def _month_convert_to_iso_strategy(group_id: Dict[str, int]) -> str:
-        return datetime.datetime(group_id["year"], group_id["month"], 1).isoformat()
+    sum_by_period_result = await PaymentDAO().get_sum_by_period(period, SumPeriodGroupEnum(input_data.group_type))
+    return Text(
+        sum_by_period_result.model_dump_json()
+    )

@@ -18,19 +18,19 @@ class PaymentUpdateDTO(AbstractDTO):
     dt: datetime.datetime
 
 
-class PaymentGroupEnum(Enum):
-    hour = 'hour'
-    day = 'day'
-    week = 'week'
-    month = 'month'
+class SumPeriodGroupEnum(Enum):
+    HOUR = 'hour'
+    DAY = 'day'
+    WEEK = 'week'
+    MONTH = 'month'
 
 
-class SumPeriodAggregationInputDTO(AbstractDTO):
+class SumByPeriodInputDTO(AbstractDTO):
     dt_from: datetime.datetime
     dt_upto: datetime.datetime
-    group_type: PaymentGroupEnum
+    group_type: SumPeriodGroupEnum
 
 
-class SumPeriodAggregationOutputDTO(AbstractDTO):
+class SumByPeriodOutputDTO(AbstractDTO):
     dataset: List[int]
     labels: List[str]
