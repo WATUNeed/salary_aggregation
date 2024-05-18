@@ -1,3 +1,73 @@
-docker cp dump/ mongo:dump/
-bsondump /dump/sampleDB/sample_collection.bson > collection.json
-mongoimport -d sampleDB -c sample_collection --uri="mongodb://user:password@localhost:27017" --authenticationDatabase admin -v < collection.json
+# Концепция
+
+Микросервис разбит на слои:
+- Domain
+  - Model / DTO
+  - DAL
+  - Service
+- API
+
+## Domain
+
+    В него входит все сущности с их представление, бизнес-логикой, и способом получения.
+
+## Model
+
+    Слой данных (в данном случае MongoDB + валидация типов от ODM).
+
+## DTO
+
+    Слой промежуточного представления доменных сущностей.
+
+## DAL
+
+    Слой доступа к данным (в данном случае запросы к MongoDB и их конструкторы).
+
+## Service
+
+    Слой логической валидации, обмена между DAL разных доменных сущностей.
+
+## API
+
+    Слой интерфейсов к внешним системам (в данном случае тг бот).
+
+---
+
+# Деплой
+
+1) Создать ./.env
+    ```.env
+    MONGO_HOST=mongo
+    MONGO_PORT=27017
+    MONGO_USER=user
+    MONGO_PASSWORD=password
+    MONGO_DB=sampleDB
+    MONGO_DRIVER=mongodb
+    
+    BOT_TOKEN=...
+    ```
+2) Поднять проект в докере:
+    ```bash
+    docker compose up -d --build
+    ```
+
+3) Накатить дамп:
+    ```bash
+    docker cp path/to/dump/ mongo:dump/
+    bsondump /dump/sampleDB/sample_collection.bson > collection.json
+    mongoimport -d ${MONGO_DB} -c Payment --uri="${MONGO_DRIVER}://${user}:${password}@${host}:${port}" --authenticationDatabase admin -v < collection.json
+    ```
+---
+
+# Решение задачи
+
+## Принцип работы запроса агрегации платежей суммы за период с группировкой за период.
+
+1) Запускается функция __get_sum_by_period__ из слоя доступа к данным __PaymentDAO__.
+2) Основываясь на введенном параметре __group_type__ выбирается стратегия группировки.
+    > Стратегия группировка - класс, унаследованный от __SumByPeriodStrategyABC__ с реализацией нужных функций и методов для агрегации. 
+
+    Для каждого из периодов группировки был создан свой класс.
+3) Создаётся сущность класса __SumByPeriodGroupingSelector__ с валидными данными и прокинутыми функциями с нужной стратегией.
+4) Исполняется запрос в монгу с агрегацией, фильтром на период, сортировкой по дате и вычислением суммы за период.
+5) Сборка результата запроса в выходной DTO.

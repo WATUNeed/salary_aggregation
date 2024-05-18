@@ -190,8 +190,13 @@ class MonthSumByPeriodStrategy(SumByPeriodStrategyABC):
     @staticmethod
     def group_fabric() -> Dict[str, Dict[str, str]]:
         return {
-            "year": {"$year": "$dt"},
-            "month": {"$month": "$dt"}
+            "_id": {
+                "year": {"$year": "$dt"},
+                "month": {"$month": "$dt"}
+            },
+            "total": {
+                "$sum": "$value"
+            }
         }
 
     @staticmethod
@@ -214,7 +219,12 @@ class MonthSumByPeriodStrategy(SumByPeriodStrategyABC):
 
     @staticmethod
     def increment(dt: datetime) -> datetime.datetime:
-        return dt.replace(day=28) + datetime.timedelta(days=4)
+        month = dt.month + 1
+        year = dt.year
+        if month > 12:
+            month = 1
+            year += 1
+        return datetime.datetime(year, month, 1)
 
 
 class SumByPeriodGroupingSelector:

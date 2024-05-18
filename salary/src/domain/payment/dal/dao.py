@@ -3,7 +3,7 @@ from collections import defaultdict
 from src.domain.abc.dal import DocumentDAO
 from src.domain.payment.dto import PaymentCreateDTO, PaymentUpdateDTO, SumPeriodGroupEnum, SumByPeriodOutputDTO
 from src.domain.payment.model import Payment
-from src.domain.payment.dal.pipeline.sum_by_period import SumByPeriodGroupingSelector
+from src.domain.payment.dal.constructor.sum_by_period import SumByPeriodGroupingSelector
 from src.domain.period.dto import PeriodDTO
 
 
