@@ -81,7 +81,7 @@ class HourSumByPeriodStrategy(SumByPeriodStrategyABC):
         return datetime.datetime(group_id["year"], group_id["month"], group_id["day"], group_id["hour"]).isoformat()
 
     @staticmethod
-    def period_stap(dt: datetime) -> datetime.datetime:
+    def increment_in_step_over_period(dt: datetime) -> datetime.datetime:
         return dt + datetime.timedelta(hours=1)
 
 
@@ -126,7 +126,7 @@ class DaySumByPeriodStrategy(SumByPeriodStrategyABC):
         return datetime.datetime(group_id["year"], group_id["month"], group_id["day"]).isoformat()
 
     @staticmethod
-    def period_stap(dt: datetime) -> datetime.datetime:
+    def increment_in_step_over_period(dt: datetime) -> datetime.datetime:
         return dt + datetime.timedelta(days=1)
 
 
@@ -172,7 +172,7 @@ class WeekSumByPeriodStrategy(SumByPeriodStrategyABC):
         return datetime.datetime.strptime(f'{group_id["year"]} {group_id["week"]} 1', '%G %V %u').isoformat()
 
     @staticmethod
-    def period_stap(dt: datetime) -> datetime.datetime:
+    def increment_in_step_over_period(dt: datetime) -> datetime.datetime:
         return dt + datetime.timedelta(weeks=1)
 
 
